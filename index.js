@@ -2,7 +2,7 @@ const Discord = require('discord.js');
 const bot = new Discord.Client();
 
 
-const token       = 'NzE0OTIzMTg5NjM3MjE4NDY1.Xs1uRw.FavxaxsaM4qnSd4GYI29opZaRcs';
+const token       = require(token.txt);
 
 const PREFIX      = '=';
 const cryerAvatar = 'https://i.imgur.com/KESzmRE.png';
