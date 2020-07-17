@@ -1,44 +1,16 @@
 const Discord = require('discord.js');
-const { GoogleSpreadsheet } = require('google-spreadsheet');
 const bot = new Discord.Client();
 
 
+const token       = 'NzE0OTIzMTg5NjM3MjE4NDY1.Xs1uRw.FavxaxsaM4qnSd4GYI29opZaRcs';
 
-async function SheetAccess()
-{
-    const creds = require('./client_secret.json');
-    const doc = new GoogleSpreadsheet('1Th-9SWorFagQQMFzf_CLxv8eRkOFGpXQr_eugv2JWCk');
-    await doc.useServiceAccountAuth(creds);
-    await doc.loadInfo();
+const PREFIX      = '=';
+const cryerAvatar = 'https://i.imgur.com/KESzmRE.png';
+const defaultName = 'NightCryer';
+const CryerID     = '714923189637218465';
 
-
-    const messagesSheet = doc.sheetsByIndex[0];
-    const artPromptSheet = doc.sheetsByIndex[1];
-    const dataSheet = doc.sheetsByIndex[2];
-
-    await messagesSheet.loadInfo();
-    await artPromptSheet.loadInfo();
-    await dataSheet.loadInfo();
-
-    await messagesSheet.loadCells();
-    await artPromptSheet.loadCells();
-    await dataSheet.loadCells();
-}
-SheetAccess();
-
-const sheetMessages = SheetAccess().messagesSheet;
-const sheetArtPrompt = SheetAccess().artPromptSheet;
-const sheetData = SheetAccess().DataSheet;
-
-const token = sheetData.getCell('B2').value;
-
-const PREFIX      = sheetData.getCell('B3').value;
-const cryerAvatar = sheetData.getCell('B4').value;
-const defaultName = sheetData.getCell('B5').value;
-const CryerID     = sheetData.getCell('B6').value;
-
-const onlineMessage    = sheetMessages.getCell('B2').value;
-const apologiesMessage = sheetMessages.getCell('B3').value;
+const onlineMessage    = 'My wings are yours to command.';
+const apologiesMessage = 'Apologies, I am but a simple beast. I do not understand.';
 
 
 var hunt;
