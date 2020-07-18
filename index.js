@@ -1,44 +1,54 @@
 const Discord = require('discord.js');
 const { GoogleSpreadsheet } = require('google-spreadsheet');
 const bot = new Discord.Client();
-const token = require('./token.txt');
+
+var creds;
+var doc;
+var testSheet;
+var PREFIX;
+var onlineMessage;
 
 
 async function SheetAccess()
 {
+    creds = require('./client_secret.json');
+    doc = new GoogleSpreadsheet('1Th-9SWorFagQQMFzf_CLxv8eRkOFGpXQr_eugv2JWCk'); 
 
-    const creds = require('./client_secret.json');
-    const doc = new GoogleSpreadsheet('1Th-9SWorFagQQMFzf_CLxv8eRkOFGpXQr_eugv2JWCk');
     await doc.useServiceAccountAuth(creds);
     await doc.loadInfo();
 
-
-    const testSheet = doc.sheetsByIndex[3];
+    testSheet = doc.sheetsByIndex[3];
     await testSheet.loadCells();
-
-    const PREFIX           = testSheet.getCellByA1('B3').value;
-    const onlineMessage    = testSheet.getCellByA1('B2').value;
+    
+    PREFIX           = testSheet.getCellByA1('B3').value;
+    onlineMessage    = testSheet.getCellByA1('B2').value;
 
     console.log(PREFIX);
     console.log(onlineMessage);
 }
-SheetAccess();
 
+SheetAccess().then(()=> 
+{  
+    bot.login(''); //don't forget token before running, delete before uploading!!!
+})
+
+
+    
 bot.on('ready',() =>
+{
+    console.log('guess im online lmao');
+})
+
+bot.on('message', message=>
+{
+    let args = message.content.slice(PREFIX.length).split(" ");
+
+    switch(args[0])
     {
-        console.log('guess im online lmao');
-    })
+        case 'servant':
+            message.reply('kindly screw off');
+            break;
+    }
+})
 
-    bot.on('message', async message=>
-    {
-        let args = message.content.slice(PREFIX.length).split(" ");
-
-        switch(args[0])
-        {
-            case 'servant':
-                message.reply('kindly screw off');
-                break;
-        }
-    })
-
-bot.login('NzE0OTIzMTg5NjM3MjE4NDY1.XxJDPQ.T5S-TfpHcst41L1C_DLWUDsC2Qs');
+    
