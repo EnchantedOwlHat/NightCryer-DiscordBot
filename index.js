@@ -4,9 +4,14 @@ const bot = new Discord.Client();
 
 var creds;
 var doc;
-var testSheet;
+
+
+
 var PREFIX;
-var onlineMessage;
+var messagesSheet;
+var artPromptsSheet;
+var dataSheet;
+
 
 
 async function SheetAccess()
@@ -17,14 +22,17 @@ async function SheetAccess()
     await doc.useServiceAccountAuth(creds);
     await doc.loadInfo();
 
-    testSheet = doc.sheetsByIndex[3];
-    await testSheet.loadCells();
+    messagesSheet = doc.sheetsByIndex[0];
+    await messagesSheet.loadCells();
+    artPromptsSheet = doc.sheetsByIndex[1];
+    await artPromptsSheet.loadCells();
+    dataSheet = doc.sheetsByIndex[2];
+    await dataSheet.loadCells();
     
-    PREFIX           = testSheet.getCellByA1('B3').value;
-    onlineMessage    = testSheet.getCellByA1('B2').value;
 
-    console.log(PREFIX);
-    console.log(onlineMessage);
+
+    PREFIX           = dataSheet.getCellByA1('B2').value;
+
 }
 
 SheetAccess().then(()=> 
@@ -50,5 +58,3 @@ bot.on('message', message=>
             break;
     }
 })
-
-    
