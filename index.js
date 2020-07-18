@@ -1,7 +1,7 @@
 const Discord = require('discord.js');
 const { GoogleSpreadsheet } = require('google-spreadsheet');
 const bot = new Discord.Client();
-
+const token = require('./token.txt');
 
 
 async function SheetAccess()
@@ -16,18 +16,17 @@ async function SheetAccess()
     const testSheet = doc.sheetsByIndex[3];
     await testSheet.loadCells();
 
-    const sheetTest        = SheetAccess().messagesSheet;
+    const PREFIX           = testSheet.getCellByA1('B3').value;
+    const onlineMessage    = testSheet.getCellByA1('B2').value;
 
-    const PREFIX           = sheetTest.getCell('B3').value;
-    const onlineMessage    = sheetTest.getCell('B2').value;
-
-    
+    console.log(PREFIX);
+    console.log(onlineMessage);
 }
 SheetAccess();
 
 bot.on('ready',() =>
     {
-        console.log(onlineMessage);
+        console.log('guess im online lmao');
     })
 
     bot.on('message', async message=>
@@ -37,9 +36,9 @@ bot.on('ready',() =>
         switch(args[0])
         {
             case 'servant':
-                message.reply(onlineMessage);
+                message.reply('kindly screw off');
                 break;
         }
     })
 
-bot.login('NzE0OTIzMTg5NjM3MjE4NDY1.XxH_Og.ILp993myV9C5LwZnHUhYrIyaVYs');
+bot.login('NzE0OTIzMTg5NjM3MjE4NDY1.XxJDPQ.T5S-TfpHcst41L1C_DLWUDsC2Qs');
