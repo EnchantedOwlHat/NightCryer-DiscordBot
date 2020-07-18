@@ -7,10 +7,16 @@ var doc;
 
 
 
-var PREFIX;
 var messagesSheet;
 var artPromptsSheet;
 var dataSheet;
+
+var PREFIX;
+var cryerAvatar;
+var defaultName;
+
+var onlineMessage;
+var apologiesMessage;
 
 
 
@@ -32,19 +38,24 @@ async function SheetAccess()
 
 
     PREFIX           = dataSheet.getCellByA1('B2').value;
+    cryerAvatar      = dataSheet.getCellByA1('B3').value;
+    defaultName      = dataSheet.getCellByA1('B4').value;
+
+    onlineMessage    = messagesSheet.getCellByA1('B2').value;
+    apologiesMessage = messagesSheet.getCellByA1('B3').value;
 
 }
 
 SheetAccess().then(()=> 
 {  
-    bot.login(''); //don't forget token before running, delete before uploading!!!
+    bot.login('NzE0OTIzMTg5NjM3MjE4NDY1.XxJqiQ.heClW2eNENNiBg5PSR6L3UPcRrQ'); //don't forget token before running, delete before uploading!!!
 })
 
 
     
 bot.on('ready',() =>
 {
-    console.log('guess im online lmao');
+    console.log(onlineMessage);
 })
 
 bot.on('message', message=>
