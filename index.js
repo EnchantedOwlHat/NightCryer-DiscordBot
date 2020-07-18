@@ -1,11 +1,10 @@
 const Discord = require('discord.js');
 const { GoogleSpreadsheet } = require('google-spreadsheet');
+const { token } = require('./config.json');
 const bot = new Discord.Client();
 
 var creds;
 var doc;
-
-
 
 var messagesSheet;
 var artPromptsSheet;
@@ -16,8 +15,11 @@ var PREFIX;
 var cryerAvatar;
 var defaultName;
 
+
 var onlineMessage;
 var apologiesMessage;
+var summoning;
+var noHunt;
 
 
 
@@ -33,11 +35,13 @@ async function SheetAccess()
     artPromptsSheet     = doc.sheetsByIndex[1];
     dataSheet           = doc.sheetsByIndex[2];
     commandSheet        = doc.sheetsByIndex[4];
+    members             = doc.sheetsByIndex[5];
 
     await messagesSheet.loadCells();
     await artPromptsSheet.loadCells();
     await dataSheet.loadCells();
     await commandSheet.loadCells();
+    await members.loadCells();
     
 
 
@@ -45,28 +49,40 @@ async function SheetAccess()
     cryerAvatar      = dataSheet.getCellByA1('B3').value;
     defaultName      = dataSheet.getCellByA1('B4').value;
 
+
     onlineMessage    = messagesSheet.getCellByA1('B2').value;
     apologiesMessage = messagesSheet.getCellByA1('B3').value;
+    summoning        = messagesSheet.getCellByA1('B4').value;
+    noHunt           = messagesSheet.getCellByA1('B5').value;
 
 }
 
 SheetAccess().then(()=> 
 {  
-    bot.login('NzE0OTIzMTg5NjM3MjE4NDY1.XxJqiQ.heClW2eNENNiBg5PSR6L3UPcRrQ'); //don't forget token before running, delete before uploading!!!
+    bot.login(token); 
 })
 
 
     
 bot.on('ready',() =>
 {
-    console.log(onlineMessage);
+    console.log(onlineMessage); 
+    if (bot.avatarURL != cryerAvatar){bot.user.setAvatar(cryerAvatar);}
+    if (bot.username != defaultName) {bot.user.setUsername(defaultName);}
+
+
+
+    hunt = false;
+    prey = null;
+    preyName = null;
+    kills = 0;
 })
 
 bot.on('message', message=>
 {
     let args = message.content.slice(PREFIX.length).split(" ");
 
-    if(message.content === "Servant on the night, the stars beckon thee!")
+    if(message.content === summoning)
     {message.reply(onlineMessage);}
 
     
@@ -89,7 +105,7 @@ bot.on('message', message=>
 
         case 'clear':
             if(!args[1]) return message.reply('How much do you want to clear? I cannot know. \n (Syntax: ' + PREFIX + 'clear <number of messages you want to clear>)');
-            message.channel.bulkDelete(args[1] + 1);
+            message.channel.bulkDelete(args[1]);
             break;
 
         case 'hunt':
@@ -97,7 +113,7 @@ bot.on('message', message=>
             {
                 if (hunt)
                 {
-                    message.reply("There is already a hunt in progress.");
+                    message.reply(noHunt);
                 }
                 else
                 {
@@ -130,26 +146,7 @@ bot.on('message', message=>
             }
             break;
 
-        case 'rad':
-            message.delete();
-            let radMan = message.mentions.users.first();
 
-            let radEmbed = new Discord.MessageEmbed()
-                                       .setTitle("THIS BUGGER IS RAD YO.")
-                                       .setImage(radMan.avatarURL())
-                                       .setDescription("Please give them lots of love and affection.");
-            message.channel.send(radEmbed);
-            break;
-        case 'test':
-            message.delete();
-            let testMan = message.mentions.users.first();
-    
-            let testEmbed = new Discord.MessageEmbed()
-                                       .setTitle(testMan.guild.member.displayName)
-                                       .setImage(testMan.avatarURL())
-                                       .setDescription("This is a test.");
-            message.channel.send(testEmbed);
-            break;
     }
 
     if(hunt === true)
