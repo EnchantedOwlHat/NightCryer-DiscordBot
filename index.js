@@ -69,36 +69,47 @@ bot.on('ready',() =>
 
 bot.on('message', message=>
 {
-    let args = message.content.slice(PREFIX.length).split(" ");
+    if(message.content === summoning) return message.reply(onlineMessage);
 
-    if(message.content === summoning)
-    {message.reply(onlineMessage);}
+    if(!message.content.startsWith(PREFIX) || message.author.bot) return;
+    let args = message.content.slice(PREFIX.length).trim().split(/  +/);
+    let command = args.shift().toLowerCase();
 
-    
-    switch(args[0])
+    switch(command)
     {
         case 'servant':
             message.reply('What is thy will?');
             break;
-        case 'show':
-            if (args[1] === "me" && args[2] === "your" && args[3] === "face")
+        case 'show me your face':
+            let image = new Discord.MessageEmbed().setImage(cryerAvatar);
+                    message.channel.send(image);
+            break;
+        case 'face':
+            if (!message.mentions.users.size)
             {
-                let image = new Discord.MessageEmbed().setImage(cryerAvatar);
-                message.channel.send(image);
+                let image = new Discord.MessageEmbed().setImage(message.author.avatarURL());
+                return message.channel.send(image);
             }
-            else
+            if (message.mentions.users.size > 0)
             {
-                message.channel.send(apologiesMessage);
+                let image = new Discord.MessageEmbed().setImage(message.mentions.avatarURL())
+                message.channel.send(image);
+                //doesn't work
             }
             break;
-
         case 'clear':
-            if(!args[1]) return message.reply('How much do you want to clear? I cannot know. \n (Syntax: ' + 
-                                              PREFIX + 'clear <number of messages you want to clear>)');
+            if(!args[1]) return message.reply(`How much do you want to clear? I cannot know. +
+                                            \n (Syntax: ${PREFIX}clear <number of messages you want to clear>)`);
 
             message.channel.bulkDelete(args[1]);
+            //doesnt work
             break;
+        case 'population':
+            message.channel.send(`The Village\'s population is ${message.channel.guild.memberCount} lost souls.`);
+            break;
+        default: return message.reply(apologiesMessage);
 
-        
+            
     }
+    
 })
