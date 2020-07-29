@@ -72,7 +72,7 @@ bot.on('message', message=>
     if(message.content === summoning) return message.reply(onlineMessage);
 
     if(!message.content.startsWith(PREFIX) || message.author.bot) return;
-    let args = message.content.slice(PREFIX.length).trim().split(/  +/);
+    let args = message.content.slice(PREFIX.length).trim().split(/ +/);
     let command = args.shift().toLowerCase();
 
     switch(command)
@@ -80,36 +80,42 @@ bot.on('message', message=>
         case 'servant':
             message.reply('What is thy will?');
             break;
-        case 'show me your face':
-            let image = new Discord.MessageEmbed().setImage(cryerAvatar);
-                    message.channel.send(image);
-            break;
         case 'face':
-            if (!message.mentions.users.size)
+            let tag = message.mentions.users.first();
+            if (!tag)
             {
-                let image = new Discord.MessageEmbed().setImage(message.author.avatarURL());
-                return message.channel.send(image);
+                let ava = new Discord.MessageEmbed().setImage(message.author.avatarURL());
+                return message.channel.send(ava);
             }
-            if (message.mentions.users.size > 0)
-            {
-                let image = new Discord.MessageEmbed().setImage(message.mentions.avatarURL())
-                message.channel.send(image);
-                //doesn't work
-            }
-            break;
-        case 'clear':
-            if(!args[1]) return message.reply(`How much do you want to clear? I cannot know. +
-                                            \n (Syntax: ${PREFIX}clear <number of messages you want to clear>)`);
 
-            message.channel.bulkDelete(args[1]);
-            //doesnt work
+            let ava = new Discord.MessageEmbed().setImage(tag.avatarURL());
+            message.channel.send(ava);
+
             break;
         case 'population':
             message.channel.send(`The Village\'s population is ${message.channel.guild.memberCount} lost souls.`);
             break;
-        default: return message.reply(apologiesMessage);
+        case 'eat':
+            const amount = parseInt(args[0]) + 1;
 
-            
+            if (isNaN(amount))
+            {
+                return message.reply('This does not appear to be a number.');
+            }
+            else if (amount <= 2 || amount > 100)
+            {
+                return message.reply('Input must be between 2 and 99.');
+            }
+            message.channel.bulkDelete(amount, true)
+            .catch(err => 
+            {
+                console.error(err);
+                message.channel.send('I have encountered some difficulty with consuming the messages.');
+            });
+            break;
+
+
+       default: return message.reply(apologiesMessage);
     }
     
 })
