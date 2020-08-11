@@ -1,7 +1,21 @@
+const fs = require('fs');
 const Discord = require('discord.js');
 const { GoogleSpreadsheet } = require('google-spreadsheet');
+
 const { token } = require('./config.json');
+
 const bot = new Discord.Client();
+bot.commands = new Discord.Collection();
+
+const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+for (const file of commandFiles) 
+{
+	const command = require(`./commands/${file}`);
+
+	// set a new item in the Collection
+	// with the key as the command name and the value as the exported module
+	bot.commands.set(command.name, command);
+}
 
 var creds;
 var doc;
@@ -75,11 +89,21 @@ bot.on('message', message=>
     let args = message.content.slice(PREFIX.length).trim().split(/ +/);
     let command = args.shift().toLowerCase();
 
+    if (!bot.commands.has(command)) return;
+
+    try 
+    {
+	    bot.commands.get(command).execute(message, args);
+    } 
+    catch (error) 
+    {
+	    console.error(error);
+	    message.reply(apologiesMessage);
+    }
+
     switch(command)
     {
-        case 'servant':
-            message.reply('What is thy will?');
-            break;
+        
         case 'face':
             let tag = message.mentions.users.first();
             if (!tag)
@@ -113,7 +137,6 @@ bot.on('message', message=>
                 message.channel.send('I have encountered some difficulty with consuming the messages.');
             });
             break;
-
 
        default: return message.reply(apologiesMessage);
     }
