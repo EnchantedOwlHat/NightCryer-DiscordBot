@@ -1,19 +1,20 @@
+//APIs
 const fs = require('fs');
 const Discord = require('discord.js');
 const { GoogleSpreadsheet } = require('google-spreadsheet');
 
+//Files
 const { token } = require('./config.json');
 
+//Initialization of Discord stuff
 const bot = new Discord.Client();
 bot.commands = new Discord.Collection();
 
+//Dynamic command loading
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 for (const file of commandFiles) 
 {
 	const command = require(`./commands/${file}`);
-
-	// set a new item in the Collection
-	// with the key as the command name and the value as the exported module
 	bot.commands.set(command.name, command);
 }
 
@@ -26,18 +27,18 @@ var dataSheet;
 var commandSheet;
 var members;
 
-var PREFIX;
+var PREFIX = '?';
 var cryerAvatar;
 var defaultName;
 
 
-var onlineMessage;
-var apologiesMessage;
+var onlineMessage = 'OnlineMessage';
+var apologiesMessage = 'ApologiesMessage';
 var summoning;
 
 
 
-
+//It would probably be easier to unload this into another file, and just get all the information from that file like what i did with config.json
 async function SheetAccess()
 {
     creds = require('./client_secret.json');
@@ -46,6 +47,16 @@ async function SheetAccess()
     await doc.useServiceAccountAuth(creds);
     await doc.loadInfo();
 
+    for (let i = 0; i < doc.sheetCount; i++)
+    {
+        //Get each sheet from the doc
+        //load the cells from those sheets
+        //load the items from those sheets
+    }
+
+
+
+/*
     messagesSheet       = doc.sheetsByIndex[0];
     artPromptsSheet     = doc.sheetsByIndex[1];
     dataSheet           = doc.sheetsByIndex[2];
@@ -68,28 +79,29 @@ async function SheetAccess()
     onlineMessage    = messagesSheet.getCellByA1('B2').value;
     apologiesMessage = messagesSheet.getCellByA1('B3').value;
     summoning        = messagesSheet.getCellByA1('B4').value;
-
+*/
 }
 SheetAccess().then(()=>{bot.login(token);})
 
 
     
 bot.on('ready',() =>
-{
-    console.log(onlineMessage); 
+{ 
     if (bot.avatarURL != cryerAvatar){bot.user.setAvatar(cryerAvatar);}
     if (bot.username != defaultName) {bot.user.setUsername(defaultName);}
+    console.log(onlineMessage);
 })
 
 bot.on('message', message=>
 {
-    if(message.content === summoning) return message.reply(onlineMessage);
-
     if(!message.content.startsWith(PREFIX) || message.author.bot) return;
+
     let args = message.content.slice(PREFIX.length).trim().split(/ +/);
     let command = args.shift().toLowerCase();
 
     if (!bot.commands.has(command)) return;
+
+
 
     try 
     {
@@ -100,45 +112,4 @@ bot.on('message', message=>
 	    console.error(error);
 	    message.reply(apologiesMessage);
     }
-
-    switch(command)
-    {
-        
-        case 'face':
-            let tag = message.mentions.users.first();
-            if (!tag)
-            {
-                let ava = new Discord.MessageEmbed().setImage(message.author.avatarURL());
-                return message.channel.send(ava);
-            }
-
-            let ava = new Discord.MessageEmbed().setImage(tag.avatarURL());
-            message.channel.send(ava);
-
-            break;
-        case 'population':
-            message.channel.send(`The Village\'s population is ${message.channel.guild.memberCount} lost souls.`);
-            break;
-        case 'eat':
-            const amount = parseInt(args[0]) + 1;
-
-            if (isNaN(amount))
-            {
-                return message.reply('This does not appear to be a number.');
-            }
-            else if (amount <= 2 || amount > 100)
-            {
-                return message.reply('Input must be between 2 and 99.');
-            }
-            message.channel.bulkDelete(amount, true)
-            .catch(err => 
-            {
-                console.error(err);
-                message.channel.send('I have encountered some difficulty with consuming the messages.');
-            });
-            break;
-
-       default: return message.reply(apologiesMessage);
-    }
-    
 })
