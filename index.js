@@ -1,115 +1,108 @@
-//APIs
+//fs is node's filesystem module
 const fs = require('fs');
-const Discord = require('discord.js');
-const { GoogleSpreadsheet } = require('google-spreadsheet');
 
-//Files
-const { token } = require('./config.json');
-
-//Initialization of Discord stuff
-const bot = new Discord.Client();
-bot.commands = new Discord.Collection();
-
-//Dynamic command loading
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-for (const file of commandFiles) 
+//Slap that config file right up in there
+const 
 {
-	const command = require(`./commands/${file}`);
-	bot.commands.set(command.name, command);
+    prefix,           //the prefix users will use to activate the bot
+    token,            //token to let the bot log in
+    errorMessage,     //error message if something goes wrong
+    onlineMessage,    //message to let you know the Cryer is awake and hungry
+} 
+= require('./config.json');
+
+//get the discord.js module in this party too
+const Discord = require('discord.js');
+//create new Discord client
+const client = new Discord.Client();
+
+//this makes a list of sorts with key-value pairs
+client.commands = new Discord.Collection();
+
+const commandFolders = fs.readdirSync('./commands');
+
+
+
+
+//in js, "for" acts the same as c# "foreach"
+//kinda wack ngl
+for (const folder of commandFolders) 
+{
+    //makes an array of the commands available. Filters it so only .js files are included
+    const commandFiles = fs.readdirSync(`./commands/${folder}`).filter(File => File.endsWith('.js'));
+
+    //loop through the commandFiles array to add each file to the collection
+    for (const file of commandFiles) 
+    {
+	    const command = require(`./commands/${folder}/${file}`);
+	    // set a new item in the Collection
+	    // with the key as the command name and the value as the exported module
+	    client.commands.set(command.name, command);
+    }
 }
 
-var creds;
-var doc;
-
-var messagesSheet;
-var artPromptsSheet;
-var dataSheet;
-var commandSheet;
-var members;
-
-var PREFIX = '?';
-var cryerAvatar;
-var defaultName;
 
 
-var onlineMessage = 'OnlineMessage';
-var apologiesMessage = 'ApologiesMessage';
-var summoning;
-
-
-
-//It would probably be easier to unload this into another file, and just get all the information from that file like what i did with config.json
-async function SheetAccess()
+//when client is ready, run this code once
+client.once('ready', () => 
 {
-    creds = require('./client_secret.json');
-    doc = new GoogleSpreadsheet('1Th-9SWorFagQQMFzf_CLxv8eRkOFGpXQr_eugv2JWCk'); 
+	console.log(onlineMessage);
+});
 
-    await doc.useServiceAccountAuth(creds);
-    await doc.loadInfo();
+client.on('message', message =>
+{
+    //ignore any messages that do not start with the assigned prefix, or if they come from the bot
+    if(!message.content.startsWith(prefix) || message.author.bot) return;
 
-    for (let i = 0; i < doc.sheetCount; i++)
+    //make an array out of the message, split apart by the spaces, and delete prefix
+    //make the entire message lowercase so it's not case-sensitive
+    const args = message.content.slice(prefix.length).trim().split(/ +/);
+    const commandName = args.shift().toLowerCase();
+
+    //if that command isn't in the command file directory, exit
+    if (!client.commands.has(commandName)) return;
+    
+    const command = client.commands.get(commandName);
+
+    //don't let him slide into anyone's dms
+    if (command.guildOnly && message.channel.type === 'dm') 
     {
-        //Get each sheet from the doc
-        //load the cells from those sheets
-        //load the items from those sheets
+        return message.reply('I cannot accept commands outside of the domain of the Countess.');
     }
 
+    //returns an error if the command requires args (command.args), but no args are provided (args.length)
+    if (command.args && !args.length) 
+    {
+        let reply = `You didn't provide any additional information, ${message.author}!`;
 
+        if (command.usage)
+        {
+            reply += `\nThe proper usage for this command would be: \`${prefix}${command.name} ${command.usage}\``;
+        }
 
-/*
-    messagesSheet       = doc.sheetsByIndex[0];
-    artPromptsSheet     = doc.sheetsByIndex[1];
-    dataSheet           = doc.sheetsByIndex[2];
-    commandSheet        = doc.sheetsByIndex[4];
-    members             = doc.sheetsByIndex[5];
+        return message.channel.send(reply);
+    }
 
-    await messagesSheet.loadCells();
-    await artPromptsSheet.loadCells();
-    await dataSheet.loadCells();
-    await commandSheet.loadCells();
-    await members.loadCells();
-    
-
-
-    PREFIX           = dataSheet.getCellByA1('B2').value;
-    cryerAvatar      = dataSheet.getCellByA1('B3').value;
-    defaultName      = dataSheet.getCellByA1('B4').value;
-
-
-    onlineMessage    = messagesSheet.getCellByA1('B2').value;
-    apologiesMessage = messagesSheet.getCellByA1('B3').value;
-    summoning        = messagesSheet.getCellByA1('B4').value;
-*/
-}
-SheetAccess().then(()=>{bot.login(token);})
-
-
-    
-bot.on('ready',() =>
-{ 
-    if (bot.avatarURL != cryerAvatar){bot.user.setAvatar(cryerAvatar);}
-    if (bot.username != defaultName) {bot.user.setUsername(defaultName);}
-    console.log(onlineMessage);
-})
-
-bot.on('message', message=>
-{
-    if(!message.content.startsWith(PREFIX) || message.author.bot) return;
-
-    let args = message.content.slice(PREFIX.length).trim().split(/ +/);
-    let command = args.shift().toLowerCase();
-
-    if (!bot.commands.has(command)) return;
-
-
-
+    //this is a try-catch thingie. Makes it throw an error when it can't execute the command.
+    //this is so it doesn't kill the program completely when it runs into an error
     try 
     {
-	    bot.commands.get(command).execute(message, args);
+        command.execute(message, args);
     } 
     catch (error) 
     {
-	    console.error(error);
-	    message.reply(apologiesMessage);
+        console.error(error);
+        message.reply(errorMessage);
     }
-})
+});
+
+
+
+
+
+
+
+
+
+//login to discord with bot's token
+client.login(token);
